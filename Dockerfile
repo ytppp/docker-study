@@ -1,13 +1,17 @@
-# 三部曲1：规定基础镜像
-FROM node:14-alpine
-
-# 增加基础目录
+# 给第一步构建阶段取别名 builder
+FROM node:14-alpine as builder
 WORKDIR /usr/app
-
-# 三部曲2：运行命令来安装必要的依赖、程序
 COPY package.json .
 RUN npm install
 COPY . .
+RUN ["npm", "run", "build"]
 
-# 三部曲3：规定容器启动参数
-CMD ["npm", "start"]
+# FROM 指令划分构架阶段，下面是第二步
+FROM nginx
+# 指明文件从 build 阶段产生的镜像中来
+COPY --from=builder /usr/app/build /usr/share/nginx/html
+# nginx 镜像有默认启动命令，不需要我们设置
+
+
+# 第一步 docker build .
+# 第二步 docker run -p 80:80 2dd03579b6d6c5
