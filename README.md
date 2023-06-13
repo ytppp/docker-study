@@ -1,1 +1,1 @@
-# Nginx + React
+# Nginx + React + Express + Postgres + Redis

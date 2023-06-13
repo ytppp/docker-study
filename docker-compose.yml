@@ -1,19 +1,50 @@
 version: '3'
 services:
-  web:
-    build: 
-      context: .
+  # postgres数据库
+  postgres:
+    image: 'postgres:10.5'
+  # redis数据库
+  redis:
+    image: 'redis:4-alpine'
+  # nginx
+  nginx-server:
+    restart: always
+    build:
+      context: ./nginx
       dockerfile: Dockerfile.dev
     ports:
-      - 3000:3000
-    volumes:
-      - /usr/app/node_modules # 没有冒号， 表示容器内这个文件夹不需要映射，使用容器本身的文件
-      - .:/usr/app # 有冒号，左边的映射到右边。冒号左边表示本地目录，冒号右边表示容器内目录
-  tests:
+      - '3030:80'
+  # api
+  api:
     build:
-      context: .
+      context: ./server
       dockerfile: Dockerfile.dev
     volumes:
       - /usr/app/node_modules
-      - .:/usr/app
-    command: ["npm", "run", "test"]
+      - ./server:/usr/app
+    # 通过 environment 设置容器的**运行时**环境变量
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PGUSER=postgres
+      - PGHOST=postgres
+      - PGDATABASE=postgres
+      - PGPASSWORD=postgres_password
+      - PGPORT=5432
+  web:
+    build: 
+      context: ./web
+      dockerfile: Dockerfile.dev
+    volumes:
+      - /usr/app/node_modules
+      - ./web:/usr/app
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile.dev
+    volumes:
+      - /usr/app/node_modules
+      - ./worker:/usr/app
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
