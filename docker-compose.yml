@@ -7,7 +7,7 @@ services:
   redis:
     image: 'redis:4-alpine'
   # nginx
-  nginx-server:
+  nginx:
     restart: always
     build:
       context: ./nginx
@@ -22,7 +22,6 @@ services:
     volumes:
       - /usr/app/node_modules
       - ./server:/usr/app
-    # 通过 environment 设置容器的**运行时**环境变量
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
